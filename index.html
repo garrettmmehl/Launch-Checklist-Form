@@ -5,6 +5,90 @@
         <link rel = "stylesheet" type = "text/css" href = "styles.css" />
         <script src = "script.js"></script>
     </head>
+    <script>
+        window.addEventListener("load", function() {
+            let form = document.querySelector("form");
+            form.addEventListener("submit", function(event) {
+                let pilotNameInput = document.querySelector("input[name=pilotName]");
+                let copilotNameInput = document.querySelector("input[name=copilotName]");
+                let fuelLevelInput = document.querySelector("input[name=fuelLevel]");
+                let cargoMassInput = document.querySelector("input[name=cargoMass]");                
+                let launchStatusUpdate = document.getElementById("launchStatus");
+                let cargoMassUpdate = document.getElementById("cargoStatus");                
+                let fuelStatusUpdate = document.getElementById("fuelStatus");
+                let faultyItemsUpdate = document.getElementById("faultyItems");
+                if (pilotNameInput.value === "" || copilotNameInput.value === "" || fuelLevelInput.value === "" || cargoMassInput.value === "") {
+                    alert("All fields are required!");
+                    // this will stop the submission if a field is left blank
+                    event.preventDefault();
+                }
+                if (!isNaN(pilotNameInput.value) || !isNaN(copilotNameInput.value)) {
+                    alert("Pilot and/or Copilot names have an invalid input!");
+                    // this will stop the submission if the pilot and copilots inputs aren't strings
+                    event.preventDefault();
+                }
+                if (isNaN(fuelLevelInput.value) || isNaN(cargoMassInput.value)) {
+                    alert("Fuel level and Cargo Mass must be numbers!");
+                    // this will stop the submission if the fuelLevel and cargoMass aren't numbers
+                    event.preventDefault();
+                }
+                
+                if (fuelLevelInput.value<10000){
+                    fuelStatusUpdate.innerText = `There is not enough fuel for the journey.`;
+                    launchStatusUpdate.innerText = `Shuttle not ready for launch`;
+                    launchStatusUpdate.style["color"] = "red";
+                    faultyItemsUpdate.style["visibility"] = "visible";
+                } else {
+                    fuelStatusUpdate.innerText = `Fuel level high enough for launch`;
+                    if (cargoMassInput.value<=10000){
+                        launchStatusUpdate.innerText = `Shuttle ready for launch`;
+                        launchStatusUpdate.style["color"] = "";
+                    }
+                }
+                if (cargoMassInput.value>10000){
+                    cargoMassUpdate.innerText = `There is too much mass for the shuttle to take off.`;
+                    launchStatusUpdate.innerText = `Shuttle not ready for launch`;                    
+                    launchStatusUpdate.style["color"] = "red";                    
+                    faultyItemsUpdate.style["visibility"] = "visible";
+                } else {
+                    cargoMassUpdate.innerText = `Cargo mass low enough for launch`;                     
+                    if (fuelLevelInput.value>=10000) {
+                        launchStatusUpdate.innerText = `Shuttle ready for launch`;
+                        launchStatusUpdate.style["color"] = "";
+                    }
+                }
+
+                if (fuelLevelInput.value>=10000 && cargoMassInput.value<=10000) {                    
+                    launchStatusUpdate.innerText = `Shuttle is ready for launch`;  
+                    launchStatusUpdate.style["color"] = "green";
+                }
+
+                let pilotStatusUpdate = document.getElementById("pilotStatus");
+                pilotStatusUpdate.innerText = `Pilot ${pilotNameInput.value} ready for launch`;
+                let copilotStatusUpdate = document.getElementById("copilotStatus");
+                copilotStatusUpdate.innerText = `Co-pilot ${copilotNameInput.value} ready for launch`;
+                event.preventDefault();
+                
+            });
+            fetch("https://handlers.education.launchcode.org/static/planets.json").then( function(response) {
+                response.json().then( function(json) {
+                    console.log("oi");
+                    let div = document.getElementById("missionTarget");
+                    div.innerHTML = `
+                        <h2>Mission Destination</h2>
+                        <ol>
+                           <li>Name: ${json[1].name}</li>
+                           <li>Diameter: ${json[1].diameter}</li>
+                           <li>Star: ${json[1].star}</li>
+                           <li>Distance from Earth: ${json[1].distance}</li>
+                           <li>Number of Moons: ${json[1].moons}</li>
+                        </ol>
+                        <img src="${json[1].image}">
+                    `;
+                });
+            });
+        });
+    </script>
     <body>
         <h1>Launch Checklist Form</h1>
         <div id="missionTarget">
@@ -29,7 +113,7 @@
         </div>
         <div id="launchStatusCheck">
             <h2 id="launchStatus">Awaiting Information Before Launch</h2>
-            <div  id="faultyItems">
+            <div id="faultyItems">
                 <ol>
                     <li id="pilotStatus">Pilot Ready</li>
                     <li id="copilotStatus">Co-pilot Ready</li>
